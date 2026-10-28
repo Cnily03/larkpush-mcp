@@ -1,0 +1,10 @@
+/target/
+/config.toml
+/.env
+/.env.*
+/config.local.toml
+.data/
+/oauth-clients.json
+*.log
+.DS_Store
+

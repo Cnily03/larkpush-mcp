@@ -1,0 +1,39 @@
+# Lark application credentials and OpenAPI settings.
+[lark]
+app_id = ""
+app_secret = ""
+
+# OpenAPI root URL; /open-apis is part of the base path.
+base_url = "https://open.feishu.cn/open-apis"
+
+# Optional Lark OAuth overrides. Defaults use the current Lark endpoints.
+# lark_authorize_url = "https://accounts.feishu.cn/open-apis/authen/v1/authorize"
+# lark_token_url = "https://accounts.feishu.cn/oauth/v3/token"
+# lark_user_info_url = "https://open.feishu.cn/open-apis/authen/v1/user_info"
+# lark_scope = "contact:user.base:readonly"
+
+# MCP listener, public URL, and access policy.
+[server]
+# Local bind address and externally reachable origin for MCP and OAuth callbacks.
+# Register http://127.0.0.1:3000/oauth/feishu/callback in Lark for local use.
+listen = "127.0.0.1:3000"
+public_base_url = "http://127.0.0.1:3000"
+
+# Dynamic OAuth client registrations are stored in .data/oauth-clients.json
+# beside the config file. Override this with a durable writable path if needed.
+# Hashed access and refresh token grants are stored beside it in oauth-refresh-tokens.json.
+# client_registry_path = ".data/oauth-clients.json"
+
+# MCP OAuth discovery is enabled automatically at these URLs:
+# Protected resource metadata: public_base_url + "/.well-known/oauth-protected-resource/mcp"
+# Authorization server metadata: public_base_url + "/.well-known/oauth-authorization-server"
+# Authorization server base URL (issuer): public_base_url
+# Authorization URL: public_base_url + "/authorize"
+# Token URL: public_base_url + "/token"
+# Client registration URL: public_base_url + "/register"
+# Resource URI: public_base_url + "/mcp"; scope: "mcp:tools"
+
+# Optional: restrict access to these Lark open IDs. An empty list allows any
+# user who can authorize this Lark app to use its application identity tools.
+allowed_open_ids = []
+
