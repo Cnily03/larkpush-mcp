@@ -190,11 +190,10 @@ impl ServerAuth {
             return false;
         };
         let state = self.state.lock().await;
-        state.refresh.access_open_id(token).is_some_and(|open_id| {
-            !open_id.is_empty()
-                && (self.server.allowed_open_ids.is_empty()
-                    || self.server.allowed_open_ids.iter().any(|id| id == open_id))
-        })
+        state
+            .refresh
+            .access_open_id(token)
+            .is_some_and(|open_id| !open_id.is_empty())
     }
 
     pub fn challenge_response(&self) -> Response {
@@ -410,11 +409,6 @@ async fn lark_callback(
     let Some(open_id) = user["data"]["open_id"].as_str() else {
         return oauth_error(StatusCode::BAD_GATEWAY, "Lark did not return an open_id");
     };
-    if !auth.server.allowed_open_ids.is_empty()
-        && !auth.server.allowed_open_ids.iter().any(|id| id == open_id)
-    {
-        return oauth_error(StatusCode::FORBIDDEN, "Lark user is not allowed");
-    }
     let code = random_secret();
     let mut state = auth.state.lock().await;
     state
@@ -529,8 +523,6 @@ async fn refresh_token(auth: &ServerAuth, request: TokenRequest) -> Response {
     };
     if grant.client_id != request.client_id
         || state.clients.redirect_uris(&request.client_id).is_none()
-        || (!auth.server.allowed_open_ids.is_empty()
-            && !auth.server.allowed_open_ids.contains(&grant.open_id))
     {
         return oauth_error_with_code(
             StatusCode::BAD_REQUEST,
@@ -616,7 +608,6 @@ mod tests {
             listen: "127.0.0.1:3000".into(),
             public_base_url: "http://127.0.0.1:3000".into(),
             client_registry_path: None,
-            allowed_open_ids: vec![],
         };
         ServerAuth::with_clients(
             lark,

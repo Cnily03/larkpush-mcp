@@ -32,7 +32,10 @@ struct TokenResponse {
 
 impl LarkClient {
     pub fn new(config: LarkConfig) -> Result<Self> {
-        let http = Client::builder().timeout(Duration::from_secs(30)).build()?;
+        let builder = Client::builder();
+        #[cfg(not(target_arch = "wasm32"))]
+        let builder = builder.timeout(Duration::from_secs(30));
+        let http = builder.build()?;
         Ok(Self {
             http,
             config,

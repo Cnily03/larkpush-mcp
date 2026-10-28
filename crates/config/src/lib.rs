@@ -30,14 +30,13 @@ pub struct LarkConfig {
 }
 
 #[derive(Clone, Debug, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct ServerConfig {
     #[serde(default = "default_listen")]
     pub listen: String,
     pub public_base_url: String,
     #[serde(default)]
     pub client_registry_path: Option<PathBuf>,
-    #[serde(default)]
-    pub allowed_open_ids: Vec<String>,
 }
 
 fn default_base_url() -> String {

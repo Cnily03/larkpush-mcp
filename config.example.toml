@@ -12,7 +12,7 @@ base_url = "https://open.feishu.cn/open-apis"
 # lark_user_info_url = "https://open.feishu.cn/open-apis/authen/v1/user_info"
 # lark_scope = "contact:user.base:readonly"
 
-# MCP listener, public URL, and access policy.
+# MCP listener and public URL.
 [server]
 # Local bind address and externally reachable origin for MCP and OAuth callbacks.
 # Register http://127.0.0.1:3000/oauth/feishu/callback in Lark for local use.
@@ -32,8 +32,3 @@ public_base_url = "http://127.0.0.1:3000"
 # Token URL: public_base_url + "/token"
 # Client registration URL: public_base_url + "/register"
 # Resource URI: public_base_url + "/mcp"; scope: "mcp:tools"
-
-# Optional: restrict access to these Lark open IDs. An empty list allows any
-# user who can authorize this Lark app to use its application identity tools.
-allowed_open_ids = []
-
