@@ -1,0 +1,62 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  rust:
+    name: Rust CLI
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Cargo dependencies
+        uses: Swatinem/rust-cache@v2
+
+      - name: Build native binaries
+        run: cargo build --release --locked --bins
+
+      - name: Upload native binaries
+        uses: actions/upload-artifact@v7
+        with:
+          name: larkpush-linux-x86_64
+          path: |
+            target/release/larkpush
+            target/release/migrate-db
+          if-no-files-found: error
+
+  worker:
+    name: Cloudflare Worker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7
+
+      - name: Install Rust and WebAssembly target
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: Cache Cargo dependencies
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: worker -> target
+
+      - name: Build Worker
+        run: sh worker/build.sh
+
+      - name: Upload Worker bundle
+        uses: actions/upload-artifact@v7
+        with:
+          name: larkpush-worker
+          path: worker/build/
+          if-no-files-found: error
