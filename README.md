@@ -169,4 +169,6 @@ In [ChatGPT Plugins](https://developers.openai.com/plugins/deploy/connect-chatgp
 
 ## License
 
+Copyright (c) Cnily03. All rights reserved.
+
 Licensed under the [MIT License](LICENSE).
