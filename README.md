@@ -31,6 +31,7 @@ Enable the following **application identity** scopes in the Lark developer conso
 | `list_chats` | List groups containing the bot. | `im:chat:read` or `im:chat:readonly` | [List chats](https://open.feishu.cn/document/server-docs/group/chat/list) |
 | `list_chat_members` | List members of a group containing the bot. | `im:chat.members:read` or `im:chat:readonly` | [List members](https://open.feishu.cn/document/server-docs/group/chat-member/get) |
 | `send_as_app` | Send text, rich text, images, cards, or files as the bot. | `im:message:send_as_bot` or `im:message` | [Send message](https://open.feishu.cn/document/server-docs/im-v1/message/create) |
+| `send_multi_users` | Queue the same message for multiple users. | `im:message:send_multi_users` and `im:message:send_as_bot` (or `im:message`) | [Send messages in batches](https://open.feishu.cn/document/server-docs/im-v1/batch_message/send-messages-in-batches) |
 | `upload_image` | Upload an image and return an `image_key`. | `im:resource` | [Upload image](https://open.feishu.cn/document/server-docs/im-v1/image/create) |
 | `upload_file` | Upload a file and return a `file_key`. | `im:resource` | [Upload file](https://open.feishu.cn/document/server-docs/im-v1/file/create) |
 
@@ -153,6 +154,14 @@ SQLite and D1 use two tables: clients (including their redirect URLs) and token 
 ```
 
 For a group, use `receive_id_type: "chat_id"` and the group's `chat_id`. To send an image or file, call `upload_image` or `upload_file` first, then send the returned key. See [Lark message content formats](https://open.feishu.cn/document/server-docs/im-v1/message-content-description/create_json) for rich text and other message types.
+
+`send_multi_users` queues the same message for multiple users. It accepts Open IDs from `list_users` or `search_users` and returns a batch message ID plus any invalid Open IDs:
+
+```json
+{"open_ids":["ou_...","ou_..."],"msg_type":"text","content":{"text":"Hello"}}
+```
+
+For `msg_type: "interactive"`, pass the card as `content.card`. Batch messages are asynchronous, cannot be sent to groups, and do not bypass the bot's availability range.
 
 ## Use in ChatGPT
 

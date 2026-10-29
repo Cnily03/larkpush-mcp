@@ -1,5 +1,7 @@
 use anyhow::{Result, bail};
-use larkpush_lark::{LarkClient, ListUsers, SearchUsers, SendMessage, UploadFile, UploadImage};
+use larkpush_lark::{
+    BatchSendMessage, LarkClient, ListUsers, SearchUsers, SendMessage, UploadFile, UploadImage,
+};
 use serde::Deserialize;
 use serde_json::{Value, json};
 
@@ -31,7 +33,7 @@ fn tool(name: &str, description: &str, properties: Value, required: &[&str]) -> 
     })
 }
 
-/// Advertise the seven supported tools and their input schemas.
+/// Advertise the supported tools and their input schemas.
 pub(crate) fn list() -> Value {
     let page = json!({"type":"integer","minimum":1,"maximum":100});
     let token = json!({"type":"string"});
@@ -69,6 +71,12 @@ pub(crate) fn list() -> Value {
             "Send a message as the application bot to a user or chat.",
             send_props,
             &["receive_id", "receive_id_type", "msg_type", "content"]
+        ),
+        tool(
+            "send_multi_users",
+            "Send one message as the application bot to multiple users in its published availability range. Uses Lark's asynchronous batch API; the response includes a batch message ID and invalid Open IDs. For interactive messages, put the card object in content.card.",
+            json!({"open_ids":{"type":"array","items":{"type":"string","minLength":1},"minItems":1},"msg_type":{"type":"string","minLength":1},"content":{"type":"object"}}),
+            &["open_ids", "msg_type", "content"]
         ),
         tool(
             "upload_image",
@@ -116,6 +124,11 @@ pub(crate) async fn call(client: &LarkClient, name: &str, args: Value) -> Result
         "send_as_app" => {
             client
                 .send_message(serde_json::from_value::<SendMessage>(args)?)
+                .await
+        }
+        "send_multi_users" => {
+            client
+                .send_multi_users(serde_json::from_value::<BatchSendMessage>(args)?)
                 .await
         }
         "upload_image" => {

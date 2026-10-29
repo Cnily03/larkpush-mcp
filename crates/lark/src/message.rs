@@ -17,6 +17,13 @@ pub struct SendMessage {
 }
 
 #[derive(Debug, Deserialize)]
+pub struct BatchSendMessage {
+    pub open_ids: Vec<String>,
+    pub msg_type: String,
+    pub content: Value,
+}
+
+#[derive(Debug, Deserialize)]
 pub struct UploadImage {
     pub image_base64: String,
 }
@@ -41,6 +48,13 @@ impl LarkClient {
             Some(body),
         )
         .await
+    }
+
+    /// Queue one message for multiple users through Lark's batch API.
+    pub async fn send_multi_users(&self, args: BatchSendMessage) -> Result<Value> {
+        let body = batch_message_request(args)?;
+        self.request(Method::POST, "message/v4/batch_send/", &[], Some(body))
+            .await
     }
 
     /// Decode and upload a base64 image within Lark's size limit.
@@ -89,6 +103,31 @@ impl LarkClient {
     }
 }
 
+/// Batch messages use an object for `content` and a separate `card` for interactive messages.
+fn batch_message_request(args: BatchSendMessage) -> Result<Value> {
+    if args.open_ids.is_empty() || args.open_ids.iter().any(|id| id.trim().is_empty()) {
+        bail!("open_ids must contain at least one non-empty Open ID");
+    }
+    if args.msg_type.trim().is_empty() {
+        bail!("msg_type is required");
+    }
+    if !args.content.is_object() {
+        bail!("content must be a JSON object");
+    }
+
+    let mut body = json!({"open_ids": args.open_ids, "msg_type": args.msg_type});
+    if args.msg_type == "interactive" {
+        let card = args.content.get("card").filter(|card| card.is_object());
+        let Some(card) = card else {
+            bail!("interactive batch messages require content.card to be a JSON object");
+        };
+        body["card"] = card.clone();
+    } else {
+        body["content"] = args.content;
+    }
+    Ok(body)
+}
+
 /// Lark requires `content` to be a JSON-encoded string inside the request object.
 fn message_request(args: SendMessage) -> Result<(String, Value)> {
     if args.receive_id.trim().is_empty() {
@@ -131,7 +170,7 @@ fn message_request(args: SendMessage) -> Result<(String, Value)> {
 mod tests {
     use serde_json::json;
 
-    use super::{SendMessage, message_request};
+    use super::{BatchSendMessage, SendMessage, batch_message_request, message_request};
 
     #[test]
     fn serializes_message_content_for_lark() {
@@ -145,5 +184,26 @@ mod tests {
         .unwrap();
         assert_eq!(receiver_type, "chat_id");
         assert_eq!(body["content"], "{\"text\":\"Hello\"}");
+    }
+
+    #[test]
+    fn builds_batch_text_and_card_requests() {
+        let text = batch_message_request(BatchSendMessage {
+            open_ids: vec!["ou_one".into(), "ou_two".into()],
+            msg_type: "text".into(),
+            content: json!({"text": "Hello"}),
+        })
+        .unwrap();
+        assert_eq!(text["open_ids"], json!(["ou_one", "ou_two"]));
+        assert_eq!(text["content"], json!({"text": "Hello"}));
+
+        let card = batch_message_request(BatchSendMessage {
+            open_ids: vec!["ou_one".into()],
+            msg_type: "interactive".into(),
+            content: json!({"card": {"elements": []}}),
+        })
+        .unwrap();
+        assert_eq!(card["card"], json!({"elements": []}));
+        assert!(card.get("content").is_none());
     }
 }

@@ -106,8 +106,9 @@ mod tests {
             .iter()
             .map(|tool| tool["name"].as_str().unwrap())
             .collect();
-        assert_eq!(names.len(), 7);
+        assert_eq!(names.len(), 8);
         assert!(names.contains(&"send_as_app"));
+        assert!(names.contains(&"send_multi_users"));
         assert!(!names.contains(&"send_as_user"));
         assert!(names.contains(&"upload_image"));
 
