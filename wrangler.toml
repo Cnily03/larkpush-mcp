@@ -1,4 +1,4 @@
-name = "larkpush"
+name = "larkpush-mcp"
 main = "worker/build/index.js"
 compatibility_date = "2026-09-01"
 
@@ -8,8 +8,8 @@ command = "sh worker/build.sh"
 [[d1_databases]]
 binding = "LARKPUSH_DB"
 database_name = "larkpush"
-# Set this to the ID returned by `wrangler d1 create`.
-database_id = "larkpush" # Replace with the actual database ID
+# Set this to the UUID returned by `wrangler d1 create`.
+database_id = "" # Replace with the actual database UUID
 
 [vars]
 PUBLIC_BASE_URL = "https://your-worker.example.com"

@@ -95,7 +95,7 @@ wrangler login
 wrangler d1 create larkpush
 ```
 
-Set the returned database ID, `PUBLIC_BASE_URL`, and `LARK_APP_ID` in the root `wrangler.toml`. Store the Lark/Feishu app secret and Upstash TLS Redis URL, then deploy:
+Set the returned database UUID, `PUBLIC_BASE_URL`, and `LARK_APP_ID` in the root `wrangler.toml`. Store the Lark/Feishu app secret and Upstash TLS Redis URL, then deploy:
 
 ```bash
 wrangler secret put LARK_APP_SECRET
@@ -139,7 +139,7 @@ cargo run --bin migrate-db -- .data/larkpush.sqlite --remote
 
 The configuration defaults to `wrangler.toml` for either destination; use `-c` to select another Wrangler file.
 
-The local command uses local D1 state. The remote command above uses the D1 database ID in wrangler configuration.
+The local command uses local D1 state. The remote command above uses the D1 database UUID in wrangler configuration.
 
 #### Database storage
 
