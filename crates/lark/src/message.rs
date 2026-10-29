@@ -31,6 +31,7 @@ pub struct UploadFile {
 }
 
 impl LarkClient {
+    /// Validate and send an app-bot message to a user or chat.
     pub async fn send_message(&self, args: SendMessage) -> Result<Value> {
         let (receive_id_type, body) = message_request(args)?;
         self.request(
@@ -42,6 +43,7 @@ impl LarkClient {
         .await
     }
 
+    /// Decode and upload a base64 image within Lark's size limit.
     pub async fn upload_image(&self, args: UploadImage) -> Result<Value> {
         let bytes = STANDARD
             .decode(&args.image_base64)
@@ -56,6 +58,7 @@ impl LarkClient {
         self.upload("im/v1/images", form).await
     }
 
+    /// Validate and upload base64 file or media content.
     pub async fn upload_file(&self, args: UploadFile) -> Result<Value> {
         let bytes = STANDARD
             .decode(&args.file_base64)

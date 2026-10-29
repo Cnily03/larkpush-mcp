@@ -1,0 +1,13 @@
+[package]
+name = "larkpush-dbapi"
+version = "0.1.0"
+edition = "2024"
+license = "MIT"
+
+[features]
+native = []
+
+[dependencies]
+async-trait = "0.1"
+serde = { version = "1", features = ["derive"] }
+

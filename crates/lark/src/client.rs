@@ -31,6 +31,7 @@ struct TokenResponse {
 }
 
 impl LarkClient {
+    /// Build an HTTP client and initialize a shared tenant-token cache.
     pub fn new(config: LarkConfig) -> Result<Self> {
         let builder = Client::builder();
         #[cfg(not(target_arch = "wasm32"))]
@@ -43,6 +44,7 @@ impl LarkClient {
         })
     }
 
+    /// Join an API path to the configured Lark Open API base URL.
     pub(crate) fn url(&self, path: &str) -> String {
         format!(
             "{}/{}",
@@ -51,6 +53,7 @@ impl LarkClient {
         )
     }
 
+    /// Reuse a cached tenant token or refresh it before its expiry margin.
     pub(crate) async fn token(&self) -> Result<String> {
         let mut cached = self.tenant_token.lock().await;
         if let Some(token) = cached
@@ -85,6 +88,7 @@ impl LarkClient {
         Ok(value)
     }
 
+    /// Send an authenticated API request and return its successful `data` payload.
     pub(crate) async fn request(
         &self,
         method: Method,
@@ -118,6 +122,7 @@ impl LarkClient {
         Ok(value["data"].clone())
     }
 
+    /// Upload multipart content and return the successful Lark `data` payload.
     pub(crate) async fn upload(&self, path: &str, form: reqwest::multipart::Form) -> Result<Value> {
         let response = self
             .http

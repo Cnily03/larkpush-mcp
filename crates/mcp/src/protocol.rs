@@ -4,12 +4,16 @@ use tracing::{info, warn};
 
 use crate::tools;
 
+/// Legacy MCP revision supported by the JSON-RPC handler.
+pub const PROTOCOL_VERSION: &str = "2025-11-25";
+
 #[derive(Clone)]
 pub struct McpServer {
     client: LarkClient,
 }
 
 impl McpServer {
+    /// Attach a Lark client to the JSON-RPC protocol handler.
     pub fn new(client: LarkClient) -> Self {
         Self { client }
     }
@@ -27,7 +31,7 @@ impl McpServer {
         }
         let result = match method.unwrap() {
             "initialize" => json!({
-                "protocolVersion": "2025-11-25",
+                "protocolVersion": PROTOCOL_VERSION,
                 "capabilities": {"tools": {}},
                 "serverInfo": {"name": "larkpush", "version": env!("CARGO_PKG_VERSION")}
             }),
@@ -62,6 +66,7 @@ impl McpServer {
     }
 }
 
+/// Build a JSON-RPC error response with the original request ID.
 fn error(id: Value, code: i64, message: &str) -> Value {
     json!({"jsonrpc":"2.0","id":id,"error":{"code":code,"message":message}})
 }

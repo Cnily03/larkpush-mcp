@@ -26,6 +26,7 @@ enum EmployeeQuery {
 }
 
 impl EmployeeQuery {
+    /// Select the directory endpoint for listing or searching employees.
     fn path(&self) -> &'static str {
         match self {
             Self::List => "directory/v1/employees/filter",
@@ -33,6 +34,7 @@ impl EmployeeQuery {
         }
     }
 
+    /// Request only the employee ID field and include pagination when supplied.
     fn body(&self, page_token: Option<&str>) -> Value {
         // Open IDs need no additional field scope; names and departments do.
         let mut body = json!({
@@ -65,6 +67,7 @@ impl LarkClient {
             .await
     }
 
+    /// Collect at most `max_pages` pages and preserve the next page token.
     async fn directory_users(&self, operation: EmployeeQuery, args: ListUsers) -> Result<Value> {
         let limit = args.max_pages.unwrap_or(20);
         if limit == 0 || limit > 100 {
@@ -97,6 +100,7 @@ impl LarkClient {
         )
     }
 
+    /// List chats visible to the app bot with optional pagination.
     pub async fn list_chats(
         &self,
         page_size: Option<u8>,
@@ -113,6 +117,7 @@ impl LarkClient {
         self.request(Method::GET, "im/v1/chats", &query, None).await
     }
 
+    /// List members of one chat, defaulting member IDs to Open IDs.
     pub async fn list_chat_members(
         &self,
         chat_id: &str,
@@ -151,6 +156,7 @@ impl LarkClient {
     }
 }
 
+/// Reduce directory results to Open IDs and reject missing identifiers.
 fn employee_ids(data: &Value) -> Result<Vec<Value>> {
     data["employees"]
         .as_array()

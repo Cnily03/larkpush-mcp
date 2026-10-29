@@ -22,6 +22,7 @@ struct MemberArgs {
     page_token: Option<String>,
 }
 
+/// Construct one MCP tool declaration with a closed input schema.
 fn tool(name: &str, description: &str, properties: Value, required: &[&str]) -> Value {
     json!({
         "name": name,
@@ -30,6 +31,7 @@ fn tool(name: &str, description: &str, properties: Value, required: &[&str]) -> 
     })
 }
 
+/// Advertise the seven supported tools and their input schemas.
 pub(crate) fn list() -> Value {
     let page = json!({"type":"integer","minimum":1,"maximum":100});
     let token = json!({"type":"string"});
@@ -83,6 +85,7 @@ pub(crate) fn list() -> Value {
     ])
 }
 
+/// Decode tool arguments and dispatch to the matching Lark operation.
 pub(crate) async fn call(client: &LarkClient, name: &str, args: Value) -> Result<Value> {
     match name {
         "list_users" => {

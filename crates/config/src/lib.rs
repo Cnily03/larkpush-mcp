@@ -36,7 +36,7 @@ pub struct ServerConfig {
     pub listen: String,
     pub public_base_url: String,
     #[serde(default)]
-    pub client_registry_path: Option<PathBuf>,
+    pub database_path: Option<PathBuf>,
 }
 
 fn default_base_url() -> String {
@@ -60,6 +60,7 @@ fn default_user_info_url() -> String {
 }
 
 impl Config {
+    /// Read TOML and reject missing app credentials or an invalid public origin.
     pub fn load(path: impl AsRef<Path>) -> Result<Self> {
         let path = path.as_ref();
         let content = fs::read_to_string(path)

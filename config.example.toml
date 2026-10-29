@@ -19,10 +19,9 @@ base_url = "https://open.feishu.cn/open-apis"
 listen = "127.0.0.1:3000"
 public_base_url = "http://127.0.0.1:3000"
 
-# Dynamic OAuth client registrations are stored in .data/oauth-clients.json
-# beside the config file. Override this with a durable writable path if needed.
-# Hashed access and refresh token grants are stored beside it in oauth-refresh-tokens.json.
-# client_registry_path = ".data/oauth-clients.json"
+# SQLite stores OAuth clients and hashed access and refresh token grants.
+# The default is `.data/larkpush.sqlite` beside this config file.
+# database_path = ".data/larkpush.sqlite"
 
 # MCP OAuth discovery is enabled automatically at these URLs:
 # Protected resource metadata: public_base_url + "/.well-known/oauth-protected-resource/mcp"
