@@ -1,0 +1,25 @@
+name = "larkpush"
+main = "worker/build/index.js"
+compatibility_date = "2026-09-01"
+
+[build]
+command = "sh worker/build.sh"
+
+[[d1_databases]]
+binding = "LARKPUSH_DB"
+database_name = "larkpush"
+# Set this to the ID returned by `wrangler d1 create`.
+database_id = "larkpush" # Replace with the actual database ID
+
+[vars]
+PUBLIC_BASE_URL = "https://your-worker.example.com"
+
+LARK_APP_ID = ""
+# Set LARK_APP_SECRET in `.env`
+# Set REDIS_URL as a secret (`rediss://default:password@host:6379`).
+
+LARK_BASE_URL = "https://open.feishu.cn/open-apis"
+LARK_AUTHORIZE_URL = "https://accounts.feishu.cn/open-apis/authen/v1/authorize"
+LARK_TOKEN_URL = "https://accounts.feishu.cn/oauth/v3/token"
+LARK_USER_INFO_URL = "https://open.feishu.cn/open-apis/authen/v1/user_info"
+LARK_SCOPE = "contact:user.base:readonly"

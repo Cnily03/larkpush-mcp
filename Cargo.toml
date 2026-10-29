@@ -1,25 +1,44 @@
 [workspace]
-members = ["crates/auth", "crates/config", "crates/lark", "crates/mcp"]
+members = ["crates/auth", "crates/config", "crates/dbapi", "crates/lark", "crates/mcp"]
 exclude = ["worker"]
 resolver = "2"
 
 [package]
 name = "larkpush"
-version = "1.0.1"
+default-run = "larkpush"
+version = "1.0.2"
 edition = "2024"
 license = "MIT"
 
+[[bin]]
+name = "migrate-db"
+path = "worker/migrate-db/main.rs"
+
 [dependencies]
 anyhow = "1"
+async-trait = "0.1"
 axum = "0.8"
+base64 = "0.22"
 clap = { version = "4", features = ["derive"] }
 larkpush-config = { path = "crates/config" }
+larkpush-dbapi = { path = "crates/dbapi", features = ["native"] }
 larkpush-auth = { path = "crates/auth" }
 larkpush-lark = { path = "crates/lark" }
 larkpush-mcp = { path = "crates/mcp" }
+rand = "0.8"
+reqwest = { version = "0.12", features = ["json", "rustls-tls"], default-features = false }
 serde_json = "1"
+serde = { version = "1", features = ["derive"] }
+sea-query = { version = "1.0.2", default-features = false, features = ["derive", "backend-sqlite", "thread-safe"] }
+sqlx = { version = "0.8.6", default-features = false, features = ["runtime-tokio", "sqlite"] }
 url = "2"
 tokio = { version = "1", features = ["macros", "rt-multi-thread", "net", "signal", "io-std", "io-util", "sync", "time"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter", "time"] }
+tempfile = "3"
+toml = "0.8"
+
+[dev-dependencies]
+tokio = { version = "1", features = ["test-util"] }
+tower = { version = "0.5", features = ["util"] }
 

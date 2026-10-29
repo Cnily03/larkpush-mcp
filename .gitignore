@@ -1,10 +1,19 @@
-/target/
-/config.toml
-/.env
-/.env.*
-/config.local.toml
+.DS_Store/
+.wrangler/
+node_modules/
+target/
+build/
+
 .data/
-/oauth-clients.json
+
+config.toml
+.env
+.env.*
+.dev.vars
+.dev.vars.*
+
+wrangler.local.toml
+
+!*.example
 *.log
-.DS_Store
 
