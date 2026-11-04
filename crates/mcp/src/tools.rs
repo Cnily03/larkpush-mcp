@@ -39,8 +39,8 @@ pub(crate) fn list() -> Value {
     let token = json!({"type":"string"});
     let receiver =
         json!({"type":"string","enum":["open_id","user_id","union_id","email","chat_id"]});
-    let content = json!({"type":"object","description":"Lark message content as an object; the server serializes it to the API's JSON string. Examples: {\"text\":\"Hello\"}, {\"image_key\":\"img_...\"}, or a post/card object."});
-    let send_props = json!({"receive_id":{"type":"string"},"receive_id_type":receiver,"msg_type":{"type":"string","enum":["text","post","image","file","audio","media","sticker","interactive","share_chat","share_user"]},"content":content,"uuid":{"type":"string"}});
+    let content = json!({"type":"object","description":"Lark message content as an object; the server serializes it to the API's JSON string. For Markdown, use msg_type post with {\"zh_cn\":{\"content\":[[{\"tag\":\"md\",\"text\":\"# Heading\"}]]}}. For plain text, use {\"text\":\"Hello\"}."});
+    let send_props = json!({"receive_id":{"type":"string"},"receive_id_type":receiver,"msg_type":{"type":"string","description":"Use post for Markdown with an md tag; markdown is not a message type.","enum":["text","post","image","file","audio","media","sticker","interactive","share_chat","share_user"]},"content":content,"uuid":{"type":"string"}});
     json!([
         tool(
             "list_users",
@@ -68,7 +68,7 @@ pub(crate) fn list() -> Value {
         ),
         tool(
             "send_as_app",
-            "Send a message as the application bot to a user or chat.",
+            "Send a message as the application bot to a user or chat. To render Markdown, use a post message with an md tag in content.",
             send_props,
             &["receive_id", "receive_id_type", "msg_type", "content"]
         ),
