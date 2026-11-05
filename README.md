@@ -18,7 +18,10 @@
 
 ### Create a Lark app
 
-Create a Lark custom app and enable its bot capability. Grant the application identity permissions needed for the MCP tools you plan to use, then publish the app version. Keep the app ID and secret for deployment.
+1. Go to [Lark/Feishu Open Platform](https://open.feishu.cn).
+2. Create a Lark custom app and enable its bot capability.
+3. Grant the application identity permissions [needed for the MCP tools](#tools-and-permissions).
+4. Publish the app version. Keep the app ID and secret for deployment.
 
 ### Tools and permissions
 
