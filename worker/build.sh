@@ -3,6 +3,9 @@ set -eu
 
 # Workers Builds does not preinstall Rust; local builds can reuse an existing toolchain.
 if ! command -v cargo >/dev/null 2>&1 || ! command -v rustup >/dev/null 2>&1; then
+    # install in `.runtime` to avoid polluting the host environment
+    repo_root="$(realpath "$(dirname "$0")/..")"
+    export HOME="$repo_root/.runtime"
     curl -fsSL https://sh.rustup.rs | sh -s -- -y --profile minimal
     export PATH="${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
 fi

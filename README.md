@@ -43,22 +43,59 @@ Choose either the native CLI server or the Cloudflare Worker.
 
 ### CLI
 
+Install Rust and Cargo:
+
+```bash
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+```
+
+Clone the repository:
+
+```bash
+git clone https://github.com/Cnily03/larkpush-mcp.git
+cd larkpush-mcp
+```
+
+Build or install the CLI, this would build the binart `larkpush` for CLI and `migrate-db` for [Cloudflare Worker migration](#migrate-to-cloudflare-worker):
+
+```bash
+# build the CLI
+cargo build --release
+# or install it to $HOME/.cargo/bin
+cargo install --path .
+```
+
+Configuration:
+
+1. Copy `config.example.toml` to `config.toml`.
+2. Set the **App ID** and **App Secret** in `[lark]`.
+   *Ref: https://open.feishu.cn/app/{APP_ID}/baseinfo*
+3. Set `[server].public_base_url` to the public HTTPS origin (for example, `https://your-domain.com`).
+4. Add `https://your-domain/oauth/feishu/callback` to the app's Lark OAuth redirect URLs on [Lark/Feishu Open Platform](https://open.feishu.com), using the same origin as `public_base_url`. \
+   *Ref: https://open.feishu.cn/app/{APP_ID}/safe*
+
+The MCP URL would be `https://your-domain/mcp` according to examples above.
+
+> [!Caution]
+> Please keep `config.toml` private. DO NOT commit it to a public repository.
+>
+
 To run the native Rust server:
 
-1. Copy `config.example.toml` to `config.toml`. Set the app ID and secret in `[lark]`, then set `[server].public_base_url` to the public HTTPS origin. Keep `config.toml` private.
-2. Add `https://your-domain/oauth/feishu/callback` to the app's Lark OAuth redirect URLs, using the same origin as `public_base_url`.
-3. Build and run the server:
+```bash
+target/release/larkpush mcp -L -c config.toml # if build
+larkpush mcp -L -c config.toml                # if install
+```
 
-   ```bash
-   cargo build --release
-   target/release/larkpush mcp -L -c config.toml
-   ```
+`-L` uses `[server].listen` by default; `-L=0.0.0.0:3000` overrides it. It's recommended to expose the server through HTTPS and forward all its routes through the reverse proxy.
 
-`-L` uses `[server].listen`; `-L=0.0.0.0:3000` overrides it. Expose the server through HTTPS and forward all its routes through the reverse proxy. The MCP URL is `https://your-domain/mcp`.
+#### Database storage
 
-#### OAuth tokens and persistence
+The native server stores persistent data like OAuth clients and token grants by SQLite in `.data/larkpush.sqlite` beside the config file. Set `[server].database_path` to use another location.
 
-The native server stores OAuth clients and token grants in `.data/larkpush.sqlite` beside the config file. Pending logins and authorization codes use an in-memory key-value cache and expire after five minutes; a background worker removes expired entries every minute. An unfinished login must be restarted after a server restart. Keep the SQLite database across restarts. Set `[server].database_path` to use another location. The current schema does not import older JSON files or upgrade earlier SQLite schemas; use a fresh database when updating from those versions.
+State storage like pending logins and authorization codes use an *in-memory key-value cache* with short expiries by a background cleanup worker. That means restarting the server will require unfinished logins to start over. And the server doesn't support multiple instances behind a load balancer or cluster.
+
+#### Token lifetime and rotation
 
 MCP access tokens last one hour. The `/token` endpoint supports the `refresh_token` grant, rotating refresh tokens for up to 90 days of inactivity, so an OAuth client can renew access without another Lark login. Existing connections created before this feature need one new login to receive a refresh token.
 
@@ -66,21 +103,27 @@ MCP access tokens last one hour. The `/token` endpoint supports the `refresh_tok
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Cnily03/larkpush-mcp)
 
+This repository also provides a serverless implementation as a Cloudflare Worker.
+
 The worker uses [Cloudflare D1](https://developers.cloudflare.com/d1/) and [Upstash Redis](https://developers.cloudflare.com/workers/databases/third-party-integrations/upstash/). You need to configure them before deploying the worker.
 
 #### Deploy with the button
 
+Please [create an Upstash database](https://docs.upstash.com/redis#create-a-database) first.
+
 The button imports the repository root, including the shared crates, and provisions the D1 database. The Worker initializes its schema on the first request.
 
-Set `PUBLIC_BASE_URL` to the Worker's final HTTPS origin, `LARK_APP_ID` to the Lark app ID, and `LARK_APP_SECRET` and `REDIS_URL` as secrets.
+- Create or select the D1 Database.
+- Set `PUBLIC_BASE_URL` to the Worker's final HTTPS origin.
+- Set `LARK_APP_ID` to the Lark **App ID**.
+- Set `LARK_APP_SECRET` to the Lark **App Secret** as a secret.
+- Set `REDIS_URL` to the Upstash Redis URL as a secret, with the format `rediss://default:password@host:6379` from the [Upstash Console](https://console.upstash.com).
 
-Use the TLS connection string from the Upstash Console for `REDIS_URL` (`rediss://default:password@host:6379`).
-
-If the final URL is assigned after deployment, update `PUBLIC_BASE_URL` and redeploy before connecting a client. Register `PUBLIC_BASE_URL/oauth/feishu/callback` in the Lark/Feishu app.
+Before connecting a client, do not forget to register `{PUBLIC_BASE_URL}/oauth/feishu/callback` as a redirect URL on [Lark/Feishu Open Platform](https://open.feishu.cn). If the final URL is assigned after deployment, update `PUBLIC_BASE_URL` and redeploy it.
 
 #### Manual setup
 
-Install Wrangler, the Rust WebAssembly target, and the Rust build tool. Ensure `worker-build` is on your `PATH`.
+Install Wrangler, the Rust WebAssembly target, and the Rust build tool.
 
 ```bash
 npm install -g wrangler
@@ -95,55 +138,82 @@ wrangler login
 wrangler d1 create larkpush
 ```
 
-Set the returned database UUID, `PUBLIC_BASE_URL`, and `LARK_APP_ID` in the root `wrangler.toml`. Store the Lark/Feishu app secret and Upstash TLS Redis URL, then deploy:
-
-```bash
-wrangler secret put LARK_APP_SECRET
-wrangler secret put REDIS_URL
-wrangler deploy
-```
-
-Register `PUBLIC_BASE_URL/oauth/feishu/callback` in the Lark/Feishu app. The Worker D1 database is separate from the native server's SQLite database; existing OAuth connections must authorize once against the Worker URL unless migrated.
-
-#### Local development
-
-From the repository root, create a local Wrangler configuration and `.env`:
+It's recommended to create a local Wrangler configuration and `.env`:
 
 ```bash
 cp wrangler.toml wrangler.local.toml
 cp .env.example .env
 ```
 
-Set `LARK_APP_ID` in `wrangler.local.toml`, `LARK_APP_SECRET` and `REDIS_URL` in `.env`. Register `http://127.0.0.1:8787/oauth/feishu/callback` in Lark/Feishu, then run:
+In `wrangler.local.toml`, set `database_id` to the returned database UUID.
+
+In `[vars]`:
+
+- Set `PUBLIC_BASE_URL` as your worker's final HTTPS origin.
+- Set `LARK_APP_ID` to Lark **App ID**.
+
+Store the Lark **App Secret** and Upstash Redis URL in `.env` and upload them to Cloudflare, then deploy:
 
 ```bash
-wrangler dev -c wrangler.local.toml --port 8787 # --var PUBLIC_BASE_URL:http://127.0.0.1:8787
+wrangler -c wrangler.local.toml secret put LARK_APP_SECRET
+wrangler -c wrangler.local.toml secret put REDIS_URL
+wrangler -c wrangler.local.toml deploy
 ```
 
-The root `.env`, `wrangler.local.toml`, and build output are ignored by Git. `.env` supplies local secrets; deployed Workers use the secrets set by `wrangler secret put`. Local development uses the configured Upstash Redis database, so use a separate database from production.
+Register `{PUBLIC_BASE_URL}/oauth/feishu/callback` as a redirect URL on [Lark/Feishu Open Platform](https://open.feishu.cn).
+
+#### Local development
+
+Set `PUBLIC_BASE_URL` to local origin like `http://localhost:8787`, then register the corresponding redirect URL (*e.g. `http://localhost:8787/oauth/feishu/callback`*) on [Lark/Feishu Open Platform](https://open.feishu.cn), then run:
+
+```bash
+wrangler -c wrangler.local.toml dev --port 8787 # --var PUBLIC_BASE_URL:http://localhost:8787
+```
+
+> [!Note]
+> The root `.env`, `wrangler.local.toml`, and build output are ignored by Git. `.env` only supplies local secrets.
+>
+> Please use the secrets set by `wrangler secret put` for deployed workers.
+>
+> Local development uses the configured Upstash Redis database, so use a **separate** database from production.
+>
 
 Worker logs show UTC time, level, scope, and request details in the `wrangler dev` terminal. To view logs from a deployed Worker:
 
 ```bash
-wrangler tail -c wrangler.toml --format pretty
+wrangler -c wrangler.local.toml tail --format pretty
 ```
 
 #### Migrate to Cloudflare Worker
 
-Stop the native server before copying its SQLite database file. Pass that file directly to `migrate-db`; it applies the D1 schema and imports registered OAuth clients and token pairs that are still valid. It does not migrate pending logins or authorization codes from cache, or remove the source file. The import preserves each token's MCP resource. If the Worker uses a different MCP URL, clients must sign in again to obtain tokens for that URL.
+The repository provides a migration tool to copy the SQLite database from the native server (CLI) to Cloudflare D1 or local worker development environment.
+
+Stop the native server before copying its SQLite database file.
+
+Pass the SQLite database file directly to `migrate-db`, it would execute D1 initialization and migration.
 
 ```bash
-cargo run --bin migrate-db -- .data/larkpush.sqlite --local -c wrangler.local.toml
-cargo run --bin migrate-db -- .data/larkpush.sqlite --remote
+# Migrate to local D1 for development
+cargo run --bin migrate-db -- -c wrangler.local.toml .data/larkpush.sqlite --local
+# Migrate to remote D1 for production
+cargo run --bin migrate-db -- -c wrangler.local.toml .data/larkpush.sqlite --remote
 ```
 
 The configuration defaults to `wrangler.toml` for either destination; use `-c` to select another Wrangler file.
 
-The local command uses local D1 state. The remote command above uses the D1 database UUID in wrangler configuration.
+Note that the migration tool won't replace any data value ​​due to configuration differences. It only copies the data.
 
 #### Database storage
 
-SQLite and D1 use two tables: clients (including their redirect URLs) and token pairs. Each token pair has an integer `id` primary key; rotating a refresh token replaces both tokens in that row. The revised schema drops the old split token tables on startup, so clients using those tokens must sign in again. OAuth discovery metadata comes from `PUBLIC_BASE_URL` or `[server].public_base_url`; it is not stored in the database. Tokens are stored directly in the table, so protect database access and backups. Worker login states and authorization codes have five-minute Redis expiries and are consumed with `GETDEL`. The Worker initializes the D1 schema automatically on first use; `migrate-db` also initializes it before importing data. Local D1 data is stored under `.wrangler/state` by default and is separate from the remote database.
+The D1 Database uses same schema as SQLite in the native server.
+
+The Worker initializes the D1 schema automatically on first use. [Migrating](#migrate-to-cloudflare-worker) also initializes it before importing data.
+
+State storages use external Redis database with short expiries, and would be consumed or cleaned up automatically.
+
+Local D1 data is stored under `.wrangler/state` by default and is separate from the remote database, while the redis is not. You should use a separate Redis database for local development to avoid conflicts with production data.
+
+As it's a serverless application, the Worker supports multiple instances or cluster deployment.
 
 ## Send a message
 
@@ -165,7 +235,13 @@ For `msg_type: "interactive"`, pass the card as `content.card`. Batch messages a
 
 ## Use in ChatGPT
 
-In [ChatGPT Plugins](https://developers.openai.com/plugins/deploy/connect-chatgpt), add the MCP URL with OAuth, create and install the plugin, then start a new conversation and select it with `@`.
+In [ChatGPT Plugins](https://chatgpt.com/plugins), add the MCP URL with OAuth. The MCP URL is like `https://your-domain/mcp` according to examples above.
+
+Once the MCP URL is typed in, ChatGPT would automatically discover the OAuth configurations. If not, please check whether the `/.well-known/oauth*` endpoint is forbidden by your reverse proxy or firewall.
+
+Create and install the plugin, try to login to the plugin by Lark/Feishu account. Then start a new conversation and ask ChatGPT to send a message to a Lark user or group.
+
+For more details, please refer to the official documentation: [Connect and test your plugin](https://developers.openai.com/plugins/deploy/connect-chatgpt).
 
 ## License
 

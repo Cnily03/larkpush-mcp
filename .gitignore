@@ -4,6 +4,7 @@ node_modules/
 target/
 build/
 
+.runtime/
 .data/
 
 config.toml

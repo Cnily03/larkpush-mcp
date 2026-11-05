@@ -1,6 +1,6 @@
 # Lark application credentials and OpenAPI settings.
 [lark]
-app_id = ""
+app_id     = ""
 app_secret = ""
 
 # OpenAPI root URL; /open-apis is part of the base path.
@@ -17,17 +17,17 @@ base_url = "https://open.feishu.cn/open-apis"
 # Local bind address and externally reachable origin for MCP and OAuth callbacks.
 # Register http://127.0.0.1:3000/oauth/feishu/callback in Lark for local use.
 listen = "127.0.0.1:3000"
+
+# MCP OAuth discovery is enabled automatically at these URLs:
+# - Protected resource metadata: "{public_base_url}/.well-known/oauth-protected-resource/mcp"
+# - Authorization server metadata: "{public_base_url}/.well-known/oauth-authorization-server"
+# - Authorization server base URL (issuer): "{public_base_url}"
+# - Authorization URL: "{public_base_url}/authorize"
+# - Token URL: "{public_base_url}/token"
+# - Client registration URL: "{public_base_url}/register"
+# - Resource URI: "{public_base_url}/mcp"; scope: "mcp:tools"
 public_base_url = "http://127.0.0.1:3000"
 
 # SQLite stores OAuth clients and hashed access and refresh token grants.
 # The default is `.data/larkpush.sqlite` beside this config file.
 # database_path = ".data/larkpush.sqlite"
-
-# MCP OAuth discovery is enabled automatically at these URLs:
-# Protected resource metadata: public_base_url + "/.well-known/oauth-protected-resource/mcp"
-# Authorization server metadata: public_base_url + "/.well-known/oauth-authorization-server"
-# Authorization server base URL (issuer): public_base_url
-# Authorization URL: public_base_url + "/authorize"
-# Token URL: public_base_url + "/token"
-# Client registration URL: public_base_url + "/register"
-# Resource URI: public_base_url + "/mcp"; scope: "mcp:tools"
