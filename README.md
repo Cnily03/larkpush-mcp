@@ -2,7 +2,7 @@
 
 `larkpush` is an OAuth-protected MCP server for finding Lark users and chats and sending messages as a Lark application bot.
 
-## Contents
+## 📄 Contents
 
 - [Get started](#get-started)
   - [Create a Lark app](#create-a-lark-app)
@@ -14,7 +14,7 @@
 - [Use in ChatGPT](#use-in-chatgpt)
 - [License](#license)
 
-## Get started
+## 💡 Get started
 
 ### Create a Lark app
 
@@ -37,11 +37,11 @@ Enable the following **application identity** scopes in the Lark developer conso
 
 `list_users` and `search_users` use Lark's Directory APIs and return `items` containing `open_id`, plus `has_more` and `next_page_token` for pagination. Names require an additional Directory field scope such as `directory:employee.base.name.name:read`, so they are not requested with the current permissions. The bot must belong to a target group, and a direct-message recipient must be within the app's availability range. The optional `[lark].lark_scope` applies to the user's OAuth login, separately from these application scopes.
 
-## Deployment
+## 🚀 Deployment
 
 Choose either the native CLI server or the Cloudflare Worker.
 
-### CLI
+### ⚙️ CLI
 
 Install Rust and Cargo:
 
@@ -93,13 +93,13 @@ larkpush mcp -L -c config.toml                # if install
 
 The native server stores persistent data like OAuth clients and token grants by SQLite in `.data/larkpush.sqlite` beside the config file. Set `[server].database_path` to use another location.
 
-State storage like pending logins and authorization codes use an *in-memory key-value cache* with short expiries by a background cleanup worker. That means restarting the server will require unfinished logins to start over. And the server doesn't support multiple instances behind a load balancer or cluster.
+State storage like pending logins and authorization codes use an *in-memory key-value cache* with short expiries by a background cleanup worker. That means restarting the server will require unfinished logins to start over. And the server does NOT support multiple instances behind a load balancer or cluster.
 
 #### Token lifetime and rotation
 
 MCP access tokens last one hour. The `/token` endpoint supports the `refresh_token` grant, rotating refresh tokens for up to 90 days of inactivity, so an OAuth client can renew access without another Lark login. Existing connections created before this feature need one new login to receive a refresh token.
 
-### Cloudflare Worker
+### ⛅ Cloudflare Worker
 
 [![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/Cnily03/larkpush-mcp)
 
@@ -215,7 +215,7 @@ Local D1 data is stored under `.wrangler/state` by default and is separate from 
 
 As it's a serverless application, the Worker supports multiple instances or cluster deployment.
 
-## Send a message
+## 💬 Send a message
 
 `send_as_app` takes `receive_id`, `receive_id_type`, `msg_type`, and a JSON object in `content`. For example:
 
@@ -233,7 +233,7 @@ For a group, use `receive_id_type: "chat_id"` and the group's `chat_id`. To send
 
 For `msg_type: "interactive"`, pass the card as `content.card`. Batch messages are asynchronous, cannot be sent to groups, and do not bypass the bot's availability range.
 
-## Use in ChatGPT
+## 🤖 Use in ChatGPT
 
 In [ChatGPT Plugins](https://chatgpt.com/plugins), add the MCP URL with OAuth. The MCP URL is like `https://your-domain/mcp` according to examples above.
 
@@ -243,7 +243,7 @@ Create and install the plugin, try to login to the plugin by Lark/Feishu account
 
 For more details, please refer to the official documentation: [Connect and test your plugin](https://developers.openai.com/plugins/deploy/connect-chatgpt).
 
-## License
+## 🎫 License
 
 Copyright (c) Cnily03. All rights reserved.
 
