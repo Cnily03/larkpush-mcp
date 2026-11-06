@@ -18,8 +18,20 @@ LARK_APP_ID = ""
 # Set LARK_APP_SECRET in `.env` as a secret.
 # Set REDIS_URL as a secret (`rediss://default:password@host:6379`).
 
-LARK_BASE_URL      = "https://open.feishu.cn/open-apis"
-LARK_AUTHORIZE_URL = "https://accounts.feishu.cn/open-apis/authen/v1/authorize"
-LARK_TOKEN_URL     = "https://accounts.feishu.cn/oauth/v3/token"
-LARK_USER_INFO_URL = "https://open.feishu.cn/open-apis/authen/v1/user_info"
-LARK_SCOPE         = "contact:user.base:readonly"
+# OpenAPI endpoints
+# URL fields default to Lark Office endpoints when omitted.
+# You can switch by (un)commenting the urls below.
+
+# * Lark Office endpoints
+LARK_BASE_URL      = "https://open.larksuite.com/open-apis"
+LARK_AUTHORIZE_URL = "https://open.larksuite.com/open-apis/authen/v1/authorize"
+LARK_TOKEN_URL     = "https://accounts.larksuite.com/oauth/v3/token"
+LARK_USER_INFO_URL = "https://open.larksuite.com/open-apis/authen/v1/user_info"
+
+# * Feishu endpoints
+# LARK_BASE_URL      = "https://open.feishu.cn/open-apis"
+# LARK_AUTHORIZE_URL = "https://accounts.feishu.cn/open-apis/authen/v1/authorize"
+# LARK_TOKEN_URL     = "https://accounts.feishu.cn/oauth/v3/token"
+# LARK_USER_INFO_URL = "https://open.feishu.cn/open-apis/authen/v1/user_info"
+
+LARK_SCOPE = "contact:user.base:readonly"

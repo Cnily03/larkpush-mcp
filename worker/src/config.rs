@@ -1,14 +1,11 @@
 //! Worker bindings and deployment configuration.
 
-use larkpush_config::LarkConfig;
+use larkpush_config::{
+    DEFAULT_LARK_AUTHORIZE_URL, DEFAULT_LARK_BASE_URL, DEFAULT_LARK_SCOPE, DEFAULT_LARK_TOKEN_URL,
+    DEFAULT_LARK_USER_INFO_URL, LarkConfig,
+};
 use url::Url;
 use worker::{Env, Error, Result};
-
-const DEFAULT_LARK_BASE_URL: &str = "https://open.feishu.cn/open-apis";
-const DEFAULT_LARK_AUTHORIZE_URL: &str = "https://accounts.feishu.cn/open-apis/authen/v1/authorize";
-const DEFAULT_LARK_TOKEN_URL: &str = "https://accounts.feishu.cn/oauth/v3/token";
-const DEFAULT_LARK_USER_INFO_URL: &str = "https://open.feishu.cn/open-apis/authen/v1/user_info";
-const DEFAULT_LARK_SCOPE: &str = "contact:user.base:readonly";
 
 pub struct Config {
     pub public_base_url: String,

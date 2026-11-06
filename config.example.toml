@@ -3,14 +3,23 @@
 app_id     = ""
 app_secret = ""
 
-# OpenAPI root URL; /open-apis is part of the base path.
-base_url = "https://open.feishu.cn/open-apis"
+# OpenAPI endpoints
+# URL fields default to Lark Office endpoints when omitted.
+# You can switch by (un)commenting the urls below.
 
-# Optional Lark OAuth overrides. Defaults use the current Lark endpoints.
+# * Lark Office endpoints
+base_url           = "https://open.larksuite.com/open-apis"
+lark_authorize_url = "https://open.larksuite.com/open-apis/authen/v1/authorize"
+lark_token_url     = "https://accounts.larksuite.com/oauth/v3/token"
+lark_user_info_url = "https://open.larksuite.com/open-apis/authen/v1/user_info"
+
+# * Feishu endpoints
+# base_url           = "https://open.feishu.cn/open-apis"
 # lark_authorize_url = "https://accounts.feishu.cn/open-apis/authen/v1/authorize"
-# lark_token_url = "https://accounts.feishu.cn/oauth/v3/token"
+# lark_token_url     = "https://accounts.feishu.cn/oauth/v3/token"
 # lark_user_info_url = "https://open.feishu.cn/open-apis/authen/v1/user_info"
-# lark_scope = "contact:user.base:readonly"
+
+lark_scope = "contact:user.base:readonly"
 
 # MCP listener and public URL.
 [server]

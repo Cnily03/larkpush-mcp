@@ -6,6 +6,20 @@ use std::{
 use anyhow::{Context, Result, bail};
 use serde::Deserialize;
 
+/// Default OpenAPI root for Lark Office.
+pub const DEFAULT_LARK_BASE_URL: &str = "https://open.larksuite.com/open-apis";
+/// Default Lark Office login authorization endpoint.
+pub const DEFAULT_LARK_AUTHORIZE_URL: &str =
+    "https://open.larksuite.com/open-apis/authen/v1/authorize";
+/// Default Lark Office OAuth token endpoint.
+pub const DEFAULT_LARK_TOKEN_URL: &str = "https://accounts.larksuite.com/oauth/v3/token";
+/// Default Lark Office user information endpoint.
+pub const DEFAULT_LARK_USER_INFO_URL: &str =
+    "https://open.larksuite.com/open-apis/authen/v1/user_info";
+/// Default scope requested during Lark Office login.
+pub const DEFAULT_LARK_SCOPE: &str = "contact:user.base:readonly";
+const DEFAULT_LISTEN: &str = "127.0.0.1:3000";
+
 #[derive(Clone, Debug, Deserialize)]
 pub struct Config {
     pub lark: LarkConfig,
@@ -40,23 +54,27 @@ pub struct ServerConfig {
 }
 
 fn default_base_url() -> String {
-    "https://open.feishu.cn/open-apis".into()
+    DEFAULT_LARK_BASE_URL.to_owned()
+}
+
+fn default_authorize_url() -> String {
+    DEFAULT_LARK_AUTHORIZE_URL.to_owned()
+}
+
+fn default_token_url() -> String {
+    DEFAULT_LARK_TOKEN_URL.to_owned()
+}
+
+fn default_user_info_url() -> String {
+    DEFAULT_LARK_USER_INFO_URL.to_owned()
+}
+
+fn default_scope() -> String {
+    DEFAULT_LARK_SCOPE.to_owned()
 }
 
 fn default_listen() -> String {
-    "127.0.0.1:3000".into()
-}
-fn default_authorize_url() -> String {
-    "https://accounts.feishu.cn/open-apis/authen/v1/authorize".into()
-}
-fn default_token_url() -> String {
-    "https://accounts.feishu.cn/oauth/v3/token".into()
-}
-fn default_scope() -> String {
-    "contact:user.base:readonly".into()
-}
-fn default_user_info_url() -> String {
-    "https://open.feishu.cn/open-apis/authen/v1/user_info".into()
+    DEFAULT_LISTEN.to_owned()
 }
 
 impl Config {
@@ -95,7 +113,7 @@ mod tests {
     fn example_uses_lark_and_server_sections() {
         let config: Config = toml::from_str(include_str!("../../../config.example.toml"))
             .expect("example configuration should parse");
-        assert_eq!(config.lark.base_url, "https://open.feishu.cn/open-apis");
+        assert_eq!(config.lark.base_url, "https://open.larksuite.com/open-apis");
         assert_eq!(config.server.listen, "127.0.0.1:3000");
     }
 

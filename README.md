@@ -1,11 +1,14 @@
 # Larkpush
 
-`larkpush` is an OAuth-protected MCP server for finding Lark users and chats and sending messages as a Lark application bot.
+_**English** | [简体中文](README.zh-CN.md)_
+
+`larkpush` is an OAuth-protected MCP server for finding Lark Office users and chats and sending messages as a Lark Office application bot.
 
 ## 📄 Contents
 
 - [Get started](#get-started)
-  - [Create a Lark app](#create-a-lark-app)
+  - [Create a Lark Office app](#create-a-lark-office-app)
+  - [Switch API URLs](#switch-api-urls)
   - [Tools and permissions](#tools-and-permissions)
 - [Deployment](#deployment)
   - [CLI](#cli)
@@ -16,29 +19,33 @@
 
 ## 💡 Get started
 
-### Create a Lark app
+### Create a Lark Office app
 
-1. Go to [Lark/Feishu Open Platform](https://open.feishu.cn).
-2. Create a Lark custom app and enable its bot capability.
+1. Go to [Lark Office Open Platform](https://open.larksuite.com).
+2. Create a Lark Office custom app and enable its bot capability.
 3. Grant the application identity permissions [needed for the MCP tools](#tools-and-permissions).
 4. Publish the app version. Keep the app ID and secret for deployment.
 
+### Switch API URLs
+
+`config.toml` and `wrangler.toml` can specify OpenAPI endpoints. It uses Lark Office endpoints by default and gives both alternatives. You can switch URLs by commenting/uncommenting them. For [setting up by Cloudflare Worker button](#deploy-with-the-button), please modify the environment variables manually when setting up or in Worker settings.
+
 ### Tools and permissions
 
-Enable the following **application identity** scopes in the Lark developer console. The directory tools return Open IDs only and request no department or profile fields.
+Enable the following **application identity** scopes in the Lark Office developer console. The directory tools return Open IDs only and request no department or profile fields.
 
-| MCP tool | Purpose | Lark scope | Lark API |
+| MCP tool | Purpose | Lark Office scope | Lark Office API |
 | --- | --- | --- | --- |
-| `list_users` | List app-visible employees and their Open IDs. | `directory:employee:list` | [Filter employees](https://open.feishu.cn/document/directory-v1/employee/filter) |
-| `search_users` | Search app-visible employees and return Open IDs. | `directory:employee:search` | [Search employees](https://open.feishu.cn/document/directory-v1/employee/search) |
-| `list_chats` | List groups containing the bot. | `im:chat:read` or `im:chat:readonly` | [List chats](https://open.feishu.cn/document/server-docs/group/chat/list) |
-| `list_chat_members` | List members of a group containing the bot. | `im:chat.members:read` or `im:chat:readonly` | [List members](https://open.feishu.cn/document/server-docs/group/chat-member/get) |
-| `send_as_app` | Send text, rich text, images, cards, or files as the bot. | `im:message:send_as_bot` or `im:message` | [Send message](https://open.feishu.cn/document/server-docs/im-v1/message/create) |
-| `send_multi_users` | Queue the same message for multiple users. | `im:message:send_multi_users` and `im:message:send_as_bot` (or `im:message`) | [Send messages in batches](https://open.feishu.cn/document/server-docs/im-v1/batch_message/send-messages-in-batches) |
-| `upload_image` | Upload an image and return an `image_key`. | `im:resource` | [Upload image](https://open.feishu.cn/document/server-docs/im-v1/image/create) |
-| `upload_file` | Upload a file and return a `file_key`. | `im:resource` | [Upload file](https://open.feishu.cn/document/server-docs/im-v1/file/create) |
+| `list_users` | List app-visible employees and their Open IDs. | `directory:employee:list` | [Directory API Explorer](https://open.larksuite.com/document/tools-and-resources/api-explorer-guide) |
+| `search_users` | Search app-visible employees and return Open IDs. | `directory:employee:search` | [Directory API Explorer](https://open.larksuite.com/document/tools-and-resources/api-explorer-guide) |
+| `list_chats` | List groups containing the bot. | `im:chat:read` or `im:chat:readonly` | [List chats](https://open.larksuite.com/document/server-docs/group/chat/list) |
+| `list_chat_members` | List members of a group containing the bot. | `im:chat.members:read` or `im:chat:readonly` | [List members](https://open.larksuite.com/document/server-docs/group/chat-member/get) |
+| `send_as_app` | Send text, rich text, images, cards, or files as the bot. | `im:message:send_as_bot` or `im:message` | [Send message](https://open.larksuite.com/document/server-docs/im-v1/message/create) |
+| `send_multi_users` | Queue the same message for multiple users. | `im:message:send_multi_users` and `im:message:send_as_bot` (or `im:message`) | [Send messages in batches](https://open.larksuite.com/document/server-docs/im-v1/batch_message/send-messages-in-batches) |
+| `upload_image` | Upload an image and return an `image_key`. | `im:resource` | [Upload image](https://open.larksuite.com/document/server-docs/im-v1/image/create) |
+| `upload_file` | Upload a file and return a `file_key`. | `im:resource` | [Upload file](https://open.larksuite.com/document/server-docs/im-v1/file/create) |
 
-`list_users` and `search_users` use Lark's Directory APIs and return `items` containing `open_id`, plus `has_more` and `next_page_token` for pagination. Names require an additional Directory field scope such as `directory:employee.base.name.name:read`, so they are not requested with the current permissions. The bot must belong to a target group, and a direct-message recipient must be within the app's availability range. The optional `[lark].lark_scope` applies to the user's OAuth login, separately from these application scopes.
+`list_users` and `search_users` use Lark Office's Directory APIs and return `items` containing `open_id`, plus `has_more` and `next_page_token` for pagination. Names require an additional Directory field scope such as `directory:employee.base.name.name:read`, so they are not requested with the current permissions. The bot must belong to a target group, and a direct-message recipient must be within the app's availability range. The optional `[lark].lark_scope` applies to the user's OAuth login, separately from these application scopes.
 
 ## 🚀 Deployment
 
@@ -71,11 +78,11 @@ cargo install --path .
 Configuration:
 
 1. Copy `config.example.toml` to `config.toml`.
-2. Set the **App ID** and **App Secret** in `[lark]`.
-   *Ref: https://open.feishu.cn/app/{APP_ID}/baseinfo*
+2. Set the **App ID** and **App Secret** in `[lark]`. \
+   *Ref: https://open.larksuite.com/app/{APP_ID}/baseinfo*
 3. Set `[server].public_base_url` to the public HTTPS origin (for example, `https://your-domain.com`).
-4. Add `https://your-domain/oauth/feishu/callback` to the app's Lark OAuth redirect URLs on [Lark/Feishu Open Platform](https://open.feishu.com), using the same origin as `public_base_url`. \
-   *Ref: https://open.feishu.cn/app/{APP_ID}/safe*
+4. Add `https://your-domain/oauth/feishu/callback` to the app's Lark Office OAuth redirect URLs on [Lark Office Open Platform](https://open.larksuite.com), using the same origin as `public_base_url`. \
+   *Ref: https://open.larksuite.com/app/{APP_ID}/safe*
 
 The MCP URL would be `https://your-domain/mcp` according to examples above.
 
@@ -100,7 +107,7 @@ State storage like pending logins and authorization codes use an *in-memory key-
 
 #### Token lifetime and rotation
 
-MCP access tokens last one hour. The `/token` endpoint supports the `refresh_token` grant, rotating refresh tokens for up to 90 days of inactivity, so an OAuth client can renew access without another Lark login. Existing connections created before this feature need one new login to receive a refresh token.
+MCP access tokens last one hour. The `/token` endpoint supports the `refresh_token` grant, rotating refresh tokens for up to 90 days of inactivity, so an OAuth client can renew access without another Lark Office login. Existing connections created before this feature need one new login to receive a refresh token.
 
 ### ⛅ Cloudflare Worker
 
@@ -117,12 +124,13 @@ Please [create an Upstash database](https://docs.upstash.com/redis#create-a-data
 The button imports the repository root, including the shared crates, and provisions the D1 database. The Worker initializes its schema on the first request.
 
 - Create or select the D1 Database.
+- According to different development platforms and service regions, if you want to switch OpenAPI endpoints, set or modify OpenAPI endpoints variables manually.
 - Set `PUBLIC_BASE_URL` to the Worker's final HTTPS origin.
-- Set `LARK_APP_ID` to the Lark **App ID**.
-- Set `LARK_APP_SECRET` to the Lark **App Secret** as a secret.
+- Set `LARK_APP_ID` to the Lark Office **App ID**.
+- Set `LARK_APP_SECRET` to the Lark Office **App Secret** as a secret.
 - Set `REDIS_URL` to the Upstash Redis URL as a secret, with the format `rediss://default:password@host:6379` from the [Upstash Console](https://console.upstash.com).
 
-Before connecting a client, do not forget to register `{PUBLIC_BASE_URL}/oauth/feishu/callback` as a redirect URL on [Lark/Feishu Open Platform](https://open.feishu.cn). If the final URL is assigned after deployment, update `PUBLIC_BASE_URL` and redeploy it.
+Before connecting a client, do not forget to register `{PUBLIC_BASE_URL}/oauth/feishu/callback` as a redirect URL on [Lark Office Open Platform](https://open.larksuite.com). If the final URL is assigned after deployment, update `PUBLIC_BASE_URL` and redeploy it.
 
 #### Manual setup
 
@@ -152,10 +160,11 @@ In `wrangler.local.toml`, set `database_id` to the returned database UUID.
 
 In `[vars]`:
 
+- Switch OpenAPI endpoints by commenting/uncommenting the URLs according to your needs.
 - Set `PUBLIC_BASE_URL` as your worker's final HTTPS origin.
-- Set `LARK_APP_ID` to Lark **App ID**.
+- Set `LARK_APP_ID` to Lark Office **App ID**.
 
-Store the Lark **App Secret** and Upstash Redis URL in `.env` and upload them to Cloudflare, then deploy:
+Store the Lark Office **App Secret** and Upstash Redis URL in `.env` and upload them to Cloudflare, then deploy:
 
 ```bash
 wrangler -c wrangler.local.toml secret put LARK_APP_SECRET
@@ -163,11 +172,11 @@ wrangler -c wrangler.local.toml secret put REDIS_URL
 wrangler -c wrangler.local.toml deploy
 ```
 
-Register `{PUBLIC_BASE_URL}/oauth/feishu/callback` as a redirect URL on [Lark/Feishu Open Platform](https://open.feishu.cn).
+Register `{PUBLIC_BASE_URL}/oauth/feishu/callback` as a redirect URL on [Lark Office Open Platform](https://open.larksuite.com).
 
 #### Local development
 
-Set `PUBLIC_BASE_URL` to local origin like `http://localhost:8787`, then register the corresponding redirect URL (*e.g. `http://localhost:8787/oauth/feishu/callback`*) on [Lark/Feishu Open Platform](https://open.feishu.cn), then run:
+Set `PUBLIC_BASE_URL` to local origin like `http://localhost:8787`, then register the corresponding redirect URL (*e.g. `http://localhost:8787/oauth/feishu/callback`*) on [Lark Office Open Platform](https://open.larksuite.com), then run:
 
 ```bash
 wrangler -c wrangler.local.toml dev --port 8787 # --var PUBLIC_BASE_URL:http://localhost:8787
@@ -226,7 +235,7 @@ As it's a serverless application, the Worker supports multiple instances or clus
 {"receive_id":"ou_...","receive_id_type":"open_id","msg_type":"text","content":{"text":"Hello"}}
 ```
 
-For a group, use `receive_id_type: "chat_id"` and the group's `chat_id`. To send an image or file, call `upload_image` or `upload_file` first, then send the returned key. See [Lark message content formats](https://open.feishu.cn/document/server-docs/im-v1/message-content-description/create_json) for rich text and other message types.
+For a group, use `receive_id_type: "chat_id"` and the group's `chat_id`. To send an image or file, call `upload_image` or `upload_file` first, then send the returned key. See [Lark Office message content formats](https://open.larksuite.com/document/server-docs/im-v1/message-content-description/create_json) for rich text and other message types.
 
 `send_multi_users` queues the same message for multiple users. It accepts Open IDs from `list_users` or `search_users` and returns a batch message ID plus any invalid Open IDs:
 
@@ -242,7 +251,7 @@ In [ChatGPT Plugins](https://chatgpt.com/plugins), add the MCP URL with OAuth. T
 
 Once the MCP URL is typed in, ChatGPT would automatically discover the OAuth configurations. If not, please check whether the `/.well-known/oauth*` endpoint is forbidden by your reverse proxy or firewall.
 
-Create and install the plugin, try to login to the plugin by Lark/Feishu account. Then start a new conversation and ask ChatGPT to send a message to a Lark user or group.
+Create and install the plugin, try to login to the plugin by Lark Office account. Then start a new conversation and ask ChatGPT to send a message to a Lark Office user or group.
 
 For more details, please refer to the official documentation: [Connect and test your plugin](https://developers.openai.com/plugins/deploy/connect-chatgpt).
 
